@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  frontend:
+  frontend-milestone1:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -18,10 +18,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci
-      - run: npm test
+      - run: npm install
+      # Run only Milestone 1 tests (task1-task4, exclude integrationTest)
+      - name: Run Milestone 1 frontend tests
+        run: npm test -- tests/task*.test.jsx
 
-  backend:
+  backend-milestone2:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,7 +36,7 @@ jobs:
           node-version: '20'
       
       # Note: Students should set up their own MONGODB_URI in .env file or GitHub secrets
-      - run: npm ci
+      - run: npm install
       
       # Start backend server in background
       - name: Start backend server
@@ -52,17 +54,76 @@ jobs:
           done
         continue-on-error: false
       
-      # Run tests (server should be running)
-      - name: Run backend tests
-        run: npm test
+      # Run only Milestone 2 tests (exclude dbTest)
+      - name: Run Milestone 2 backend tests
+        run: node --test tests/task*.test.js
       
       # Cleanup: kill background server
       - name: Stop backend server
         if: always()
         run: pkill -f "node.*index.js" || true
 
+  backend-milestone3:
+    runs-on: ubuntu-latest
+    needs: backend-milestone2
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      # Note: Students should set up their own MONGODB_URI in .env file or GitHub secrets
+      - run: npm install
+      
+      # Start backend server in background
+      - name: Start backend server
+        run: |
+          npm run dev &
+          sleep 5  # Wait for server to start
+          # Check if server is running
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/health 2>/dev/null; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+        continue-on-error: false
+      
+      # Run only Milestone 3 database tests
+      - name: Run Milestone 3 backend database tests
+        run: node --test tests/dbTest/*.test.js
+      
+      # Cleanup: kill background server
+      - name: Stop backend server
+        if: always()
+        run: pkill -f "node.*index.js" || true
+
+  frontend-milestone4:
+    runs-on: ubuntu-latest
+    needs: [backend-milestone3, e2e-milestone3]
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      # Run only Milestone 4 integration tests
+      - name: Run Milestone 4 frontend integration tests
+        run: npm test -- tests/integrationTest/*.test.jsx
+
   e2e-milestone1:
     runs-on: ubuntu-latest
+    needs: frontend-milestone1
     steps:
       - uses: actions/checkout@v4
       
@@ -89,6 +150,11 @@ jobs:
         run: |
           cd frontend && npm install
       
+      # Install backend dependencies (needed for Playwright webServer config)
+      - name: Install backend dependencies
+        run: |
+          cd backend && npm install
+      
       # Install playwright dependencies and browsers
       - name: Install Playwright browsers
         run: |
@@ -103,7 +169,7 @@ jobs:
 
   e2e-milestone2:
     runs-on: ubuntu-latest
-    needs: e2e-milestone1
+    needs: [e2e-milestone1, backend-milestone2]
     steps:
       - uses: actions/checkout@v4
       
@@ -145,7 +211,7 @@ jobs:
 
   e2e-milestone3:
     runs-on: ubuntu-latest
-    needs: e2e-milestone2
+    needs: [e2e-milestone2, backend-milestone3]
     steps:
       - uses: actions/checkout@v4
       
@@ -187,7 +253,7 @@ jobs:
 
   e2e-milestone4:
     runs-on: ubuntu-latest
-    needs: e2e-milestone3
+    needs: [e2e-milestone3, frontend-milestone4]
     steps:
       - uses: actions/checkout@v4
       
