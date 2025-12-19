@@ -19,7 +19,7 @@ jobs:
       - name: Checkout test files
         uses: actions/checkout@v4
         with:
-          repository: TechHubXperts/note-app-test-files
+          repository: TechHubXperts/note-app-tests-files
           path: test-files
           token: ${{ secrets.NOTE_API_SECRET }}
       
@@ -47,7 +47,7 @@ jobs:
       - name: Checkout test files
         uses: actions/checkout@v4
         with:
-          repository: TechHubXperts/note-app-test-files
+          repository: TechHubXperts/note-app-tests-files
           path: test-files
           token: ${{ secrets.NOTE_API_SECRET }}
       
@@ -97,7 +97,7 @@ jobs:
       - name: Checkout test files
         uses: actions/checkout@v4
         with:
-          repository: TechHubXperts/note-app-test-files
+          repository: TechHubXperts/note-app-tests-files
           path: test-files
           token: ${{ secrets.NOTE_API_SECRET }}
       
