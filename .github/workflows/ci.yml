@@ -122,15 +122,14 @@ jobs:
         run: |
           cd backend && npm ci
       
-      # Install playwright dependencies
-      - uses: microsoft/playwright@v1
-        with:
-          working-directory: ./playwright
-      - run: npm ci
-        working-directory: ./playwright
+      # Install playwright dependencies and browsers
+      - name: Install Playwright browsers
+        run: |
+          cd playwright
+          npm ci
+          npx playwright install --with-deps
       
       # Run E2E tests (Playwright will start servers via webServer config)
       - name: Run E2E tests
         run: npx playwright test
         working-directory: ./playwright
-
