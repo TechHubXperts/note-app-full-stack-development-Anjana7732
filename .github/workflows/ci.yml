@@ -114,19 +114,19 @@ jobs:
       # Install frontend dependencies
       - name: Install frontend dependencies
         run: |
-          cd frontend && npm ci
+          cd frontend && npm install
       
       # Install backend dependencies
       # Note: Students should set up their own MONGODB_URI in .env file or GitHub secrets
       - name: Install backend dependencies
         run: |
-          cd backend && npm ci
+          cd backend && npm install
       
       # Install playwright dependencies and browsers
       - name: Install Playwright browsers
         run: |
           cd playwright
-          npm ci
+          npm install
           npx playwright install --with-deps
       
       # Run E2E tests (Playwright will start servers via webServer config)
